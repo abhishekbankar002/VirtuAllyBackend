@@ -1,10 +1,11 @@
+import io
 import json
 import os
 
 from PIL import Image
 
 # Create your views here.
-from django.http import JsonResponse,HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpRequest
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from .PFAFNModel.runModel import runModel
 from django.middleware.csrf import get_token
@@ -16,14 +17,9 @@ UPLOAD_FOLDER = os.path.join(os.getcwd(), 'myNewApp\\PFAFNModel\\dataset\\test_i
 
 @csrf_exempt
 def getImage(request):
-    if request.method =='POST' :
-        # sample_string_bytes = request.body.encode('ascii')
-        # print(request.body.image)
-        print(request.POST.get('email'))
-        image_file = request.FILES['image']
-        pil_img = Image.open(image_file)
-        pil_img.show()
-        file_name = 'test.jpg'
+    if request.method == 'POST':
+        saveImage(request)
+        return JsonResponse({'image': True, 'status': 200})
         filename, extension = os.path.splitext(image_file.name)
 
 

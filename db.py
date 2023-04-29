@@ -1,9 +1,11 @@
 import base64
+from bson.binary import Binary
 import datetime
 
 from pymongo import MongoClient
 from VTryon import settings
 import jwt
+from PIL import Image
 
 client = MongoClient('mongodb://localhost:27017/')
 
@@ -11,13 +13,16 @@ mydb = client["VTryon"]
 
 users = mydb['users']
 
-users.create_index('date', expireAfterSeconds=60)
+image_collection = mydb['imageCollection']
+
+image_collection.create_index('date', expireAfterSeconds=60)
 
 
 def writeDB(obj):
     userinfo = users.find()
     for user in userinfo:
         if (user['email'] == obj['email']):
+            print("Not Created")
             return ("Not Created", "")
     token = jwt.encode(
         {
@@ -35,6 +40,7 @@ def writeDB(obj):
     #                            algorithms=['HS256'])
     #
     # print(decoded_token['email'])
+    print(token)
     users.insert_one({'email': obj['email'], 'password': token})
     return ("Created", token)
 
@@ -44,31 +50,37 @@ def Login_DB(obj):
     for user in userinfo:
         if (user['email'] == obj['email']):
             if (user['password'] == obj['password']):
-                # token= jwt.encode(
-                #     {
-                #         'email':obj['email'],
-                #     },
-                #     settings.SECRET_KEY,
-                #     algorithm="HS256"
-                # )
-                # print(token)
-                # return(["True",token])
                 return ("True", user["email"])
     return ("False", obj['email'])
 
 
-def saveImage(file):
-    sample_string_bytes = file.read()
-    image = {
-        'data': sample_string_bytes
-    }
-    timestamp = datetime.datetime.utcnow()
-    users.storage.insert_one({'email': 'ac@32341123', 'image': image, "date": timestamp})
+def saveImage(request):
+    token = request.POST.get('token')
+    userinfo = users.find()
+    decoded_token = jwt.decode(token,
+                               settings.SECRET_KEY,
+                               algorithms=['HS256'])
+    image_file = request.FILES['queryImage']
+    # pil_img = Image.open(image_file)
+    # pil_img.show()
+    image_file.seek(0)
+    sample_string_bytes = request.FILES['queryImage'].read()
+    for user in userinfo:
+        if (user['email'] == decoded_token['email'] and user['password'] == token):
+            image = {
+                'data': sample_string_bytes
+            }
+            timestamp = datetime.datetime.utcnow()
+            image_collection.update({'email': user['email']}, {'email': user['email'], 'image': image, "date": timestamp}, upsert=True)
+            return True
+    return False
+
     return ("Success")
 
 
 def checkLogIn(obj):
     userinfo = users.find()
+    print(obj['token'])
     decoded_token = jwt.decode(obj['token'],
                                settings.SECRET_KEY,
                                algorithms=['HS256'])
