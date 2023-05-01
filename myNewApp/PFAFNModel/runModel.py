@@ -16,11 +16,13 @@ import torch.nn.functional as F
 def runModel(person_image_name,cloth_image_name):
     image_file_path = os.path.join('dataset/test_img', person_image_name)
 
+    print("person Image"+person_image_name)
+
     with open(r'demo.txt', 'w') as file:
         file.write(person_image_name + ' ' + cloth_image_name)
 
     opt = TestOptions().parse()
-    print(TestOptions().parse())
+    # print(TestOptions().parse())
     start_epoch, epoch_iter = 1, 0
 
     data_loader = CreateDataLoader(opt)
@@ -80,11 +82,12 @@ def runModel(person_image_name,cloth_image_name):
                 a = real_image.float().cuda()
                 b= clothes.cuda()
                 c = p_tryon
-                combine = torch.cat([a[0],b[0],c[0]], 2).squeeze()
-                cv_img=(combine.permute(1,2,0).detach().cpu().numpy()+1)/2
+                # combine = torch.cat([a[0],b[0],c[0]], 2).squeeze()
+                cv_img = (c[0].permute(1, 2, 0).detach().cpu().numpy() + 1) / 2
+                # cv_img=(combine.permute(1,2,0).detach().cpu().numpy()+1)/2
                 rgb=(cv_img*255).astype(np.uint8)
                 bgr=cv2.cvtColor(rgb,cv2.COLOR_RGB2BGR)
-                cv2.imwrite(sub_path+'/'+str(step)+'.jpg',bgr)
+                cv2.imwrite(sub_path+'/'+person_image_name,bgr)
                 # return sub_path+'/'+str(step)+'.jpg'
 
             step += 1

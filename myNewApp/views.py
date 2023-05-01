@@ -7,13 +7,15 @@ from PIL import Image
 # Create your views here.
 from django.http import JsonResponse, HttpResponse, HttpRequest
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.core import serializers
 from .PFAFNModel.runModel import runModel
 from django.middleware.csrf import get_token
-from db import writeDB, Login_DB, saveImage, checkLogIn, loadImage
+from db import writeDB, Login_DB, saveImage, checkLogIn, loadImage, getProductsFromDB
 
 
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'myNewApp\\PFAFNModel\\dataset\\test_img')
 
+RESULT_FOLDER = os.path.join(os.getcwd(), 'results\\demo\\PFAFN')
 
 @csrf_exempt
 def getImage(request):
@@ -40,6 +42,7 @@ def getImage(request):
             return HttpResponse('',status=200)
         else:
             return HttpResponse('',status=404)
+
         # plt.imshow(pil_img)
         # plt.show()
 
@@ -55,17 +58,16 @@ def registerUser(request):
         elif(flag=="Not Created"):
             return JsonResponse({'token':'','status':404})
 
-# @csrf_exempt
+@csrf_exempt
 def logIn(request):
     if request.method == "POST":
         # print(request.headers.)
         dicObj = json.loads(request.body)
-        flag = "False"
-        flag, username = Login_DB(obj=dicObj)
-        if (flag == "True"):
-            return HttpResponse('',status=200)  # Loggend In
-        elif (flag == "False"):
-            return HttpResponse('Failed authentication',status=404)  # Wrong Credentials
+        flag, token = Login_DB(obj=dicObj)
+        if flag:
+            return JsonResponse({'token':token,'status':200})  # Loggend In
+        else:
+            return JsonResponse({'token':'','status':404})  # Wrong Credentials
 
 @csrf_exempt
 def checkLogin(request):
@@ -83,13 +85,30 @@ def tryImage(request):
     if request.method == "POST":
         dicObj=json.loads(request.body)
         print(dicObj)
-        test = loadImage(dicObj)
-        runModel(test, '017575_1.jpg')
-        return JsonResponse({'status' : 200})
+        test,cloth_image = loadImage(dicObj)
+        runModel(test, cloth_image)
+        image_path = os.path.join(RESULT_FOLDER, f'{test}')
+        with open(image_path, 'rb') as f:
+            image = Image.open(f)
+            # Set the content type of the response to image/jpeg
+            response = HttpResponse(content_type='image/jpeg')
+
+            # Save the image to the response object
+            image.save(response, 'JPEG')
+            print(response)
+            return response
+        # return JsonResponse({'status' : 200})
 
         # if getImage(dicObj)!='':
         #     runModel(f'{filename}{extension}', '017575_1.jpg')
 
+@csrf_exempt
+def getProducts(request):
+    if request.method == "POST":
+        products = getProductsFromDB()
+        # data_json = json.dumps(products)
+        # print(data_json)
+        return JsonResponse(products, safe=False)
 
 def get_csrf_token(request):
     return JsonResponse({'csrf_token': get_token(request)})
