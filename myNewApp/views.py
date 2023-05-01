@@ -9,7 +9,7 @@ from django.http import JsonResponse, HttpResponse, HttpRequest
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from .PFAFNModel.runModel import runModel
 from django.middleware.csrf import get_token
-from db import writeDB, Login_DB, saveImage, checkLogIn
+from db import writeDB, Login_DB, saveImage, checkLogIn, loadImage
 
 
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'myNewApp\\PFAFNModel\\dataset\\test_img')
@@ -76,6 +76,19 @@ def checkLogin(request):
             return JsonResponse({'loggedIn': 'True'})
         else:
             return JsonResponse({'loggedIn': 'False'})
+
+
+@csrf_exempt
+def tryImage(request):
+    if request.method == "POST":
+        dicObj=json.loads(request.body)
+        print(dicObj)
+        test = loadImage(dicObj)
+        runModel(test, '017575_1.jpg')
+        return JsonResponse({'status' : 200})
+
+        # if getImage(dicObj)!='':
+        #     runModel(f'{filename}{extension}', '017575_1.jpg')
 
 
 def get_csrf_token(request):

@@ -1,4 +1,7 @@
 import base64
+import io
+import os
+
 from bson.binary import Binary
 import datetime
 
@@ -15,8 +18,9 @@ users = mydb['users']
 
 image_collection = mydb['imageCollection']
 
-image_collection.create_index('date', expireAfterSeconds=60)
+image_collection.create_index('date', expireAfterSeconds=600)
 
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'myNewApp\\PFAFNModel\\dataset\\test_img')
 
 def writeDB(obj):
     userinfo = users.find()
@@ -94,3 +98,20 @@ def checkLogIn(obj):
             return True
     return False
 
+def loadImage(obj):
+    print(obj)
+    decoded_token = jwt.decode(obj['token'],
+                               settings.SECRET_KEY,
+                               algorithms=['HS256'])
+    print(decoded_token['email'])
+    imageInfo = image_collection.find()
+    file_path = os.path.join(UPLOAD_FOLDER, f'{decoded_token["email"]}.jpg')
+    for user in imageInfo:
+        if (user['email'] == decoded_token['email']):
+            with open(file_path, 'wb') as f:
+                pil_img = Image.open(io.BytesIO(user['image']['data']))
+                pil_img.show()
+                pil_img.save(file_path)
+                # f.write(io.BytesIO(user['image']['data']))
+                return f'{decoded_token["email"]}.jpg'
+    return ''

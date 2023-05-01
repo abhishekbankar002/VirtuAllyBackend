@@ -7,6 +7,7 @@ urlpatterns = [
     path('api/register',views.registerUser),
     path('api/login',views.logIn),
     path('api/checkLogIn',views.checkLogin),
+    path('api/tryImage',views.tryImage),
     path('api/get_csrf_token/', views.get_csrf_token, name='get_csrf_token'),
 
 ]
