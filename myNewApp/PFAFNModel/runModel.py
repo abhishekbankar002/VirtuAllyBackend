@@ -11,15 +11,15 @@ import numpy as np
 import torch
 import cv2
 import torch.nn.functional as F
-
+import linecache
 
 def runModel(person_image_name,cloth_image_name):
     image_file_path = os.path.join('dataset/test_img', person_image_name)
 
-    print("person Image"+person_image_name)
-
     with open(r'demo.txt', 'w') as file:
         file.write(person_image_name + ' ' + cloth_image_name)
+        file.close()
+
 
     opt = TestOptions().parse()
     # print(TestOptions().parse())
@@ -28,16 +28,14 @@ def runModel(person_image_name,cloth_image_name):
     data_loader = CreateDataLoader(opt)
     dataset = data_loader.load_data()
     dataset_size = len(data_loader)
-    # print(dataset_size)
 
     warp_model = AFWM(opt, 3)
-    # print(warp_model)
+
     warp_model.eval()
     warp_model.cuda()
     load_checkpoint(warp_model, opt.warp_checkpoint)
 
     gen_model = ResUnetGenerator(7, 4, 5, ngf=64, norm_layer=nn.BatchNorm2d)
-    # print(gen_model)
     gen_model.eval()
     gen_model.cuda()
     load_checkpoint(gen_model, opt.gen_checkpoint)
@@ -47,7 +45,6 @@ def runModel(person_image_name,cloth_image_name):
     step_per_batch = dataset_size / opt.batchSize
 
     for epoch in range(1,2):
-
         for i, data in enumerate(dataset, start=epoch_iter):
             iter_start_time = time.time()
             total_steps += opt.batchSize
@@ -88,8 +85,10 @@ def runModel(person_image_name,cloth_image_name):
                 rgb=(cv_img*255).astype(np.uint8)
                 bgr=cv2.cvtColor(rgb,cv2.COLOR_RGB2BGR)
                 cv2.imwrite(sub_path+'/'+person_image_name,bgr)
-                # return sub_path+'/'+str(step)+'.jpg'
 
             step += 1
+
             if epoch_iter >= dataset_size:
                 break
+
+    return

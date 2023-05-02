@@ -28,7 +28,6 @@ def writeDB(obj):
     userinfo = users.find()
     for user in userinfo:
         if (user['email'] == obj['email']):
-            print("Not Created")
             return ("Not Created", "")
     token = jwt.encode(
         {
@@ -38,15 +37,6 @@ def writeDB(obj):
         settings.SECRET_KEY,
         algorithm="HS256"
     )
-
-    # print(token)
-    #
-    # decoded_token = jwt.decode(token,
-    #                            settings.SECRET_KEY,
-    #                            algorithms=['HS256'])
-    #
-    # print(decoded_token['email'])
-    print(token)
     users.insert_one({'email': obj['email'], 'password': token})
     return ("Created", token)
 
@@ -58,8 +48,6 @@ def Login_DB(obj):
             decoded_token = jwt.decode(user['password'],
                                        settings.SECRET_KEY,
                                        algorithms=['HS256'])
-            print(obj['password'])
-            print(decoded_token['password'])
             if (obj['password'] == decoded_token['password']):
                 return (True, user['password'])
             else:
@@ -74,8 +62,6 @@ def saveImage(request):
                                settings.SECRET_KEY,
                                algorithms=['HS256'])
     image_file = request.FILES['queryImage']
-    # pil_img = Image.open(image_file)
-    # pil_img.show()
     image_file.seek(0)
     sample_string_bytes = request.FILES['queryImage'].read()
     for user in userinfo:
@@ -93,13 +79,9 @@ def saveImage(request):
 
 def checkLogIn(obj):
     userinfo = users.find()
-    print(obj['token'])
     decoded_token = jwt.decode(obj['token'],
                                settings.SECRET_KEY,
                                algorithms=['HS256'])
-    print(decoded_token['email'])
-    print(decoded_token['password'])
-    print(obj['token'])
     for user in userinfo:
         if (user['email'] == decoded_token['email'] and user['password'] == obj['token']):
             print(decoded_token['email'])
@@ -108,11 +90,9 @@ def checkLogIn(obj):
     return False
 
 def loadImage(obj):
-    print(obj)
     decoded_token = jwt.decode(obj['token'],
                                settings.SECRET_KEY,
                                algorithms=['HS256'])
-    print(decoded_token['email'])
     imageInfo = image_collection.find()
     file_path = os.path.join(UPLOAD_FOLDER, f'{decoded_token["email"]}.jpg')
     for user in imageInfo:

@@ -27,8 +27,9 @@ class AlignedDataset(BaseDataset):
     def __getitem__(self, index):        
 
         file_path ='demo.txt'
-        im_name, c_name = linecache.getline(file_path, index+1).strip().split()
-
+        with open(file_path, 'r') as f:
+            first_line = f.readline()
+        im_name, c_name = first_line.strip().split()
         I_path = os.path.join(self.dir_I,im_name)
         I = Image.open(I_path).convert('RGB')
 
