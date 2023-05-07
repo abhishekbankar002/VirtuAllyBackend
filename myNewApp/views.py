@@ -26,23 +26,6 @@ def getImage(request):
     if request.method == 'POST':
         saveImage(request)
         return JsonResponse({'image': True, 'status': 200})
-        # filename, extension = os.path.splitext(image_file.name)
-        #
-        #
-        # file_path = os.path.join(UPLOAD_FOLDER, f'{filename}{extension}')
-        #
-        #     # save the file with the same extension as it was received
-        # with open(file_path, 'wb') as f:
-        #     for chunk in image_file.chunks():
-        #         f.write(chunk)
-        #
-        #
-        # runModel(f'{filename}{extension}','017575_1.jpg')
-        #
-        # if(saveImage(image_file)):
-        #     return HttpResponse('',status=200)
-        # else:
-        #     return HttpResponse('',status=404)
 
 
 @csrf_exempt

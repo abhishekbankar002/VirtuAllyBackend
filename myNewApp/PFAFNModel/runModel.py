@@ -77,7 +77,7 @@ def runModel(person_image_name,cloth_image_name):
 
             if step % 1 == 0:
                 a = real_image.float().cuda()
-                b= clothes.cuda()
+                b = clothes.cuda()
                 c = p_tryon
                 # combine = torch.cat([a[0],b[0],c[0]], 2).squeeze()
                 cv_img = (c[0].permute(1, 2, 0).detach().cpu().numpy() + 1) / 2

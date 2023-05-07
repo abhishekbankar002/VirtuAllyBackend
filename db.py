@@ -84,8 +84,6 @@ def checkLogIn(obj):
                                algorithms=['HS256'])
     for user in userinfo:
         if (user['email'] == decoded_token['email'] and user['password'] == obj['token']):
-            print(decoded_token['email'])
-            print(decoded_token['password'])
             return True
     return False
 
@@ -99,9 +97,7 @@ def loadImage(obj):
         if (user['email'] == decoded_token['email']):
             with open(file_path, 'wb') as f:
                 pil_img = Image.open(io.BytesIO(user['image']['data']))
-                # pil_img.show()
                 pil_img.save(file_path)
-                # f.write(io.BytesIO(user['image']['data']))
                 return f'{decoded_token["email"]}.jpg',obj['cloth_image']
     return ''
 
